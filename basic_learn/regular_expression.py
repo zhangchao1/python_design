@@ -1,9 +1,6 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 # author zhangchao 2016-1-29
-#!/usr/bin/python
-# -*- coding: UTF-8 -*-
-# author zhangchao 2015-12-12
 
 import re
 
