@@ -19,7 +19,7 @@ class base:
     参数：路径
     作用：判断路径是否存在
     '''
-    def path_exist(self, file_path):
+    def path_exist(self,file_path):
         return os.path.exists(file_path)
 
     '''
@@ -85,3 +85,16 @@ class base:
             return all_file ,log_file_path ,len(all_file)
         else:
             return None
+
+    '''
+    获取目录下的所有文件，使用os.walk方法进行获取
+    '''
+    def get_all_dir_file(self,path):
+        all_file_obj = os.walk(path)
+        all_file = []
+        for path ,dir ,filelist in all_file_obj:
+            for filename in filelist:
+                all_file.append(os.path.join(path,filename))
+        return all_file
+
+
