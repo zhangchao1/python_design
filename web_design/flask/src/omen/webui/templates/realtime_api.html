@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>站点访问总量分析</title>
+        <link href="{{ url_for('static', filename='libs/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+        <link href="{{ url_for('static', filename='libs/bootstrap/css/bootstrap-theme.min.css') }}" rel="stylesheet">
+    </head>
+    <body>
+        <div class="content-wrapper">
+            {% include 'base.html' %}
+            <div id="main" style="height:400px"></div>
+            <section class="content">
+                <div class="row" style="padding:10px 100px">
+                    <div class="col-md-2">
+                        <label>站点实时查询</label>
+                    </div>
+                    <div class="col-md-10" style="width:500px;">
+                        <label>站点选择</label>
+                        <select id="api" class="form-control">
+
+                        </select>
+                    </div>
+                    <div class="time-choose">
+                        <label>选择时间跨度</label>
+                        <select id="time" class="form-control"style="width:200px">
+                            <option value="1m" selected="selected">1分钟</option>
+                            <option value="5m">5分钟</option>
+                            <option value="15m">15分钟</option>
+                            <option value="30m">30分钟</option>
+                            <option value="1h">1小时</option>
+                            <option value="4h" >4小时</option>
+                            <option value="1d">1天</option>
+                            <option value="4d">4天</option>
+                            <option value="7d" >7天</option>
+                        </select>
+                </div>
+                <br/>
+                <div class="row" style="padding:20px;">
+                    <div class="alert alert-info"><b>说明</b>：折线数据两头的数据从es取出的时候，数据开始端和数据结束端的数据会有误差，观察的时候，请以中间数据为主</div>
+                </div>
+            </section>
+            <script src="{{ url_for('static', filename='libs/jquery/1.9.1/jquery.min.js') }}"></script>
+            <script src="{{ url_for('static', filename='libs/bootstrap/js/bootstrap.min.js') }}"></script>
+            <script src="//echarts.baidu.com/dist/echarts.min.js"></script>
+            <script src="//cdn.bootcss.com/moment.js/2.13.0/moment.min.js"></script>
+            <script src="{{ url_for('static', filename='js/realtime.js') }}"></script>
+        </div>
+    </body>
+</html>

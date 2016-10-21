@@ -1,0 +1,13 @@
+image: registry.aliyuncs.com/wolftankk/python27
+
+before_script:
+  - pip install -r requirements.txt -i https://pypi.mirrors.ustc.edu.cn/simple
+
+stages:
+  - coverage
+
+job_coverage:
+  stage: coverage
+  script:
+    - py.test --cov=src/omen .
+  allow_failure: true

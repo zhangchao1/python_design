@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+ <html>
+<head>
+		<meta charset="utf-8" />
+		<title>IP地址分析</title>
+		<link href="{{ url_for('static', filename='libs/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+		<link href="{{ url_for('static', filename='libs/bootstrap/css/bootstrap-theme.min.css') }}" rel="stylesheet">
+	</head>
+    <body>
+    {% include 'base.html' %}
+    <script src="{{ url_for('static', filename='libs/jquery/1.9.1/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='libs/bootstrap/js/bootstrap.min.js') }}"></script>
+    <div id="ip_view" style="position: relative;left: 100px">
+
+    </div>
+    <div id="pagecount"style="position: relative;top: 10px;left: 300px"></div>
+    <script src="{{ url_for('static', filename='libs/jquery/1.8.3/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='libs/bootstrap/js/bootstrap.min.js') }}"></script>
+    <script>
+        var curPage = 1; //当前页码
+        var total,pageSize,totalPage; //总记录数，每页显示数，总页数
+        function getData(page){
+            $.ajax({
+            type: 'GET',
+            url: '/api/findip/',
+            data: {
+                'start':page-1,
+                'max':100
+            },
+            dataType:'json',
+            success:function(json){
+                json = eval(json)
+                $("#ip_view").empty();//清空数据区
+                total = json.total; //总记录数
+                pageSize = 100; //每页显示条数
+                curPage = page; //当前页
+                totalPage = Math.ceil(total/pageSize); //总页数
+                var li = "<table class='table table-bordered'><tr><th width='100px'>id</th> <th width='300px'>ipaddress</th> <th width='100px'>status</th> <th width='300px'>time</th> </tr>";
+                var list = json.data;
+                $.each(list,function(index,array){ //遍历json数据列
+                    li += "<tr>"+"<td>"+array['id']+"</td>"+"<td>"+array['IpAddress']+"</td>"+"<td>"+array['Status']+"</td>"+"<td>"+array['SuspensionTime']+"</td>"+"</tr>"
+                });
+                li = li +"</table>"
+                $("#ip_view").append(li);
+        },
+        complete:function(){ //生成分页条
+            getPageBar();
+        },
+        error:function(){
+            alert("数据加载失败");
+        }
+    });
+}function getPageBar(){
+    //页码大于最大页数
+    if(curPage>totalPage) curPage=totalPage;
+    //页码小于1
+    if(curPage<1) curPage=1;
+    pageStr = "<span>共"+total+"条</span><span>"+curPage
+    +"/"+totalPage+"</span>";
+
+    //如果是第一页
+    if(curPage==1){
+        pageStr += "<span>首页</span>&nbsp&nbsp<span>上一页</span>&nbsp&nbsp";
+    }else{
+        pageStr += "<span><a href='javascript:void(0)' rel='1'>首页</a></span>&nbsp&nbsp<span><a href='javascript:void(0)' rel='"+(curPage-1)+"'>上一页</a></span>&nbsp&nbsp";
+    }
+
+    //如果是最后页
+    if(curPage>=totalPage){
+        pageStr += "<span>下一页</span>&nbsp&nbsp<span>尾页</span>";
+    }else{
+        pageStr += "<span><a href='javascript:void(0)' rel='"+(parseInt(curPage)+1)+"'>下一页</a></span>&nbsp&nbsp<span><a href='javascript:void(0)' rel='"+totalPage+"'>尾页</a> </span>";
+    }
+
+    $("#pagecount").html(pageStr);
+}$(function(){
+    getData(1);
+    $("#pagecount span a").live('click',function(){
+        var rel = $(this).attr("rel");
+        if(rel){
+            getData(rel);
+        }
+    });
+});
+    </script>
+    </body>
+</html>

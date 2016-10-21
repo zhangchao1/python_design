@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+ <html>
+<head>
+		<meta charset="utf-8" />
+		<title>查询api访问总量</title>
+		<link href="{{ url_for('static', filename='libs/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+		<link href="{{ url_for('static', filename='libs/bootstrap/css/bootstrap-theme.min.css') }}" rel="stylesheet">
+	</head>
+    <body>
+    {% include 'base.html' %}
+     <div class="col-md-10">
+         <label for="api" style="position: absolute;top: 5px;left: 50px">站点名</label>
+        <select id="api" class="form-control"style="left:100px;width: 400px;position: absolute">
+        </select>
+        <div class="input-group"style="left:500px">
+            <span class="input-group-addon">API名称</span>
+            <input type="text" class="form-control" id="apiname"placeholder="API名称" style="width: 400px"value="/notification/notification">
+            <button type="button" class="btn btn-success" id="iplock">查询</button>
+        </div>
+         <label for= "time" style="position: absolute;top: 6px;right: 450px">选择时间跨度</label>
+         <select id="time" class="form-control" style="position: absolute;top: 3px;width: 200px;right: 240px">
+            <option value="1m"selected="selected">1分钟</option>
+            <option value="5m">5分钟</option>
+            <option value="15m">15分钟</option>
+             <option value="30m">30分钟</option>
+             <option value="1h">1小时</option>
+             <option value="4h" >4小时</option>
+             <option value="1d">1天</option>
+             <option value="4d">4天</option>
+             <option value="7d" >7天</option>
+         </select>
+    </div>
+    <!--<script src="{{ url_for('static', filename='libs/echarts/echarts.js') }}"></script>-->
+    <div class="alert alert-info" style="position: absolute;bottom: 300px;left: 50px;width: 1000px">
+        注意事项：1.折线数据两头的数据从es取出的时候，数据开始端和数据结束端的数据会有误差，观察的时候，请以中间数据为主
+        2.查询api规则：如：configapi.plu.cn GET /list/blacklist?brand=sm-g9008w&version=3.4.7&device=4，我们只需要取出
+        /list/blacklist这个放在查询输入框
+    </div>
+    <div id="main" style="height:400px"></div>
+
+    <!-- ECharts单文件引入 -->
+    <script src="http://echarts.baidu.com/build/dist/echarts.js"></script>
+    <script src="{{ url_for('static', filename='libs/jquery/1.9.1/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='libs/bootstrap/js/bootstrap.min.js') }}"></script>
+    <script>
+        $(document).ready(function(){
+        $.ajax({
+        url: '/api/get_all_website/',
+        type: 'get',
+        data: {
+            'type':'website',
+            'rangetime':20
+        },
+        datatype: "json",
+        contenttype: 'application/json',
+        success: function(msg) {
+            var msg = jQuery.parseJSON(msg);
+            if(msg.message == "not found" || msg.message=="empty value"){
+                alert(msg.message)
+            }else{
+                var list = msg.message
+                var li = "";
+                $.each(list,function(index,array){ //遍历json数据列
+                     if (index==0){
+                         li =li+ "<option value=" +array +" selected='selected'>"+array+"</option>"
+                     }
+                    else{
+                         li=li+"<option value="+array+">"+array+"</option>"
+                     }
+                });
+                $("#api").append(li)
+                var hash;
+                hash = window.location.hash;
+                if (hash!=''){
+                    var api_name,local_hash,local_hash_len;
+                    local_hash = hash.split("#")
+                    console.log(local_hash)
+                    local_hash_len=hash.split("#").length-1;
+                    console.log(local_hash_len)
+                    api_name = local_hash[local_hash_len]
+                    console.log(api_name)
+                    $("#api").get(0).value = api_name;
+            }
+            }
+        }
+    });
+    });
+    </script>
+    <script type="text/javascript">
+        // 路径配置
+        require.config({
+            paths: {
+                echarts: 'http://echarts.baidu.com/build/dist'
+            }
+        });
+
+        // 使用
+        require(
+            [
+                'echarts',
+                'echarts/chart/line' // 使用柱状图就加载bar模块，按需加载
+            ],
+            function (ec) {
+                // 基于准备好的dom，初始化echarts图表
+                var myChart = ec.init(document.getElementById('main'));
+                $("#iplock").click(function(){
+                    var api_name = $("#apiname").val();
+                    var website_name = $("#api").val();
+                    var type = $("#time").val()
+                    var legend_data = new Array()
+                    legend_data.push(api_name)
+                    $.ajax({
+            url: '/api/get_api_visit/',
+            type: 'GET',
+            data: {
+                'apiname': api_name,
+                'website':website_name,
+                'type':type
+            },
+            dataType: "json",
+            contentType: 'application/json',
+            success: function(msg) {
+                var msg = eval(msg)
+                var msg = msg.message
+                if(msg == "not found" || msg=="empty value"){
+                    alert(msg)
+                }else{
+                    var key = new Array()
+                    var values = new Array()
+                    for(var i = 0;i<msg.length;i++){
+                        var value_all = new Array()
+                        value_all = []
+                        value_all = msg[i].split("?")
+                        key.push(value_all[0])
+                        values.push(value_all[1])
+                    }
+                   var option = {
+                        title: {
+                        text: 'API查询访问量'
+                        },
+                        tooltip : {
+                            trigger: 'axis'
+                        },
+                        legend: {
+                                data:legend_data
+                        },
+                        toolbox: {
+                            feature: {
+                            saveAsImage: {}
+                        }
+                    },
+                    grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                    },
+                    xAxis : [
+                    {
+                        type : 'category',
+                        boundaryGap : false,
+                        data : key
+                    }
+                ],
+                    yAxis : [
+                {
+                    type : 'value'
+                }
+             ],
+            series : [
+            {
+                    name:api_name,
+                    type:'line',
+                    stack: '总量',
+                    areaStyle: {normal: {}},
+                    data:values
+                },
+            ]
+        };
+                // 为echarts对象加载数据
+                myChart.setOption(option);
+                }
+            },
+        });
+
+                });
+            }
+        );
+    </script>
+    </body>
+</html>

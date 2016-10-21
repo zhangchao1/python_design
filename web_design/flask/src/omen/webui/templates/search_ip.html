@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+		<meta charset="utf-8" />
+		<title>IP地址分析</title>
+		<link href="{{ url_for('static', filename='libs/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+		<link href="{{ url_for('static', filename='libs/bootstrap/css/bootstrap-theme.min.css') }}" rel="stylesheet">
+        <link href="{{ url_for('static', filename='libs/bootstrap/css/bootstrap-datetimepicker.min.css') }}" rel="stylesheet">
+	</head>
+    <body>
+    {% include 'base.html' %}
+<div class="input-group"style="left: 20px">
+    <span class="input-group-addon">输入时间</span>
+    <input type="text" data-format="dd/MM/yyyy hh:mm:ss" class="form-control" id="input1" placeholder="输入IP查询时间" style="width: 200px">
+    <span class="input-group-addon">输入索引</span>
+    <input type="text" class="form-control" id="input2" placeholder="输入查询索引" style="width: 300px" value="ns">
+    <span class="input-group-addon">输入路径</span>
+    <input type="text" class="form-control"id="input3"  placeholder="输入路径" style="width: 300px" value="path:otv2">
+    <span class="input-group-addon">输入上限时间</span>
+    <input type="text" class="form-control"id="input4"  placeholder="输入上限时间" style="width: 300px" value="30">
+ </div>
+ <br/>
+<div class="text-center button_ip"style="">
+    <button type="button" class="btn btn-success" id="iplock" style="width: 20%">提交查询</button>
+</div>
+ <br/>
+<table id="ip_view" class="table table-bordered" style="">
+
+</table>
+    <script src="{{ url_for('static', filename='libs/jquery/1.9.1/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='libs/bootstrap/js/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='libs/bootstrap/js/bootstrap-datetimepicker.min.js') }}"></script>
+    <script>
+        $("#iplock").click(function(){
+             var input_time = $("#input1").val();
+             var input_index = $("#input2").val();
+             var input_path = $("#input3").val();
+             var input_ranktime = $("#input4").val();
+             if(input_ranktime == ""|| input_index==""|| input_path==""||input_time == ""){
+                 alert("请输入对应的查询数值")
+                 return
+             }
+            var submit_data = {
+                "time":input_time,
+                "path":input_path,
+                "index":input_index,
+                "rangtime":input_ranktime
+            }
+            $.ajax({
+            url: '/api/search_ip/',
+            type: 'GET',
+            data: submit_data,
+            dataType: "json",
+            contentType: 'application/json',
+            success: function(msg) {
+                var msg = eval(msg)
+                if(msg.message == "not found" || msg.message=="empty value"){
+                    alert(msg.message)
+                }else{
+                    $("#ip_view").empty()
+                    var data = msg.message
+                    tf_body = "<table class='table table-bordered'><tr><th width='300px'>异常ip</th> <th width='200px'>访问数</th></tr>"
+                    for(var key in data){
+                        tf_body= tf_body+"<tr>"+"<td>"+key+"</td>"+"<td>"+data[key]+"</td>"+"</tr>"
+                    }
+                    tf_body = tf_body +"</table>"
+                    $("#ip_view").append(tf_body)
+                }
+            },
+        });
+
+        });
+
+        $(function () {
+        $('#input1').datetimepicker({
+　　        format: "yyyy-mm-dd hh:ii", //选择日期后，文本框显示的日期格式
+　　        language: 'zh-CN', //汉化
+　　        autoclose:true //选择日期后自动关闭
+        });
+    });
+    </script>
+ </body>
+</html>

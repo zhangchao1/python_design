@@ -1,0 +1,7 @@
+redis>=2.10.5
+elasticsearch>=2.3.0
+Flask>=0.10.1
+Jinja2>=2.8
+six>=1.10.0
+pytest-cov
+pytest-xdist
